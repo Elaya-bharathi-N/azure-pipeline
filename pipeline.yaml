@@ -1,0 +1,42 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  mavenVersion: '3.8.4'
+  javaVersion: '11'
+  pomFile: 'pom.xml'
+
+steps:
+- task: UseJavaToolInstaller@1
+  displayName: 'Install Java JDK'
+  inputs:
+    versionSpec: $(javaVersion)
+    kitSource: 'AdoptOpenJDK'
+
+- task: UseMaven@3
+  displayName: 'Install Maven'
+  inputs:
+    mavenVersion: $(mavenVersion)
+
+- task: Maven@3
+  displayName: 'Maven Build'
+  inputs:
+    mavenPomFile: $(pomFile)
+    goals: 'clean install'
+    options: '-DskipTests=true'
+
+- task: Maven@3
+  displayName: 'Maven Test'
+  inputs:
+    mavenPomFile: $(pomFile)
+    goals: 'test'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish build artifacts'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'
